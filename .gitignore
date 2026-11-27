@@ -1,0 +1,47 @@
+# .NET build outputs
+**/bin/
+**/obj/
+*.user
+.vs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Build pipeline scratch
+out.txt
+*.tmp
+
+# Local env
+.env
+.env.*
+
+# Claude Code workspace
+.claude/
+
+# Docker image exports
+*.tar
+
+# Cloudflare Wrangler build cache
+.wrangler/
+
+# Source question PDFs — large; derived JSON under wwwroot/data is what we version
+pdf/*.pdf
+
+# Study materials (audio/screenshots) — keep local, do not push
+*.m4a
+*.mp3
+*.mp4
+# Top-level images that aren't part of the app (app images live under wwwroot/images/)
+/*.png
+/*.jpg
+/*.jpeg

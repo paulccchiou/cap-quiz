@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>國中教育會考歷屆試題練習（115–111年）</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>國中教育會考歷屆試題練習（115–111年）</h1>
+    <nav id="topnav">
+      <button class="navbtn" data-view="home">首頁</button>
+      <button class="navbtn" data-view="search">搜尋</button>
+      <button class="navbtn" data-view="history">歷史紀錄</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===== View: Home ===== -->
+    <section id="view-home" class="view active">
+      <div class="card">
+        <h2>選擇年度與考科</h2>
+        <div class="status-bar" id="status-bar">載入題庫中...</div>
+
+        <div class="mode-block resume-block" id="resume-block" hidden>
+          <h3>繼續上次測驗</h3>
+          <p class="muted" id="resume-info"></p>
+          <div class="quiz-buttons" style="margin-top:0">
+            <button class="primary" id="resume-quiz">繼續作答</button>
+            <button class="ghost danger" id="resume-discard">放棄這次</button>
+          </div>
+        </div>
+
+        <!-- 年度分頁 -->
+        <div class="mode-block">
+          <div class="year-tabs" id="year-tabs" role="tablist">
+            <button class="year-tab active" data-year="115" role="tab">115 年</button>
+            <button class="year-tab" data-year="114" role="tab">114 年</button>
+            <button class="year-tab" data-year="113" role="tab">113 年</button>
+            <button class="year-tab" data-year="112" role="tab">112 年</button>
+            <button class="year-tab" data-year="111" role="tab">111 年</button>
+            <button class="year-tab" data-year="all" role="tab">全部年度</button>
+          </div>
+
+          <p class="muted" id="subject-hint">選擇要練習的考科（收錄國、英、數、社、自五科選擇題，每題附原卷截圖與詳解）。</p>
+          <div class="subject-grid" id="subject-grid"></div>
+        </div>
+
+        <div class="mode-block">
+          <h3>循序測驗</h3>
+          <p class="muted" id="seq-hint">依所選年度與考科的題目順序作答，可指定題序區間。完成單一年度單科全卷將自動估算會考等級。</p>
+          <div class="range-row">
+            <label>起始題序 <input type="number" id="seq-start" min="1" value="1" /></label>
+            <label>結束題序 <input type="number" id="seq-end" min="1" value="1" /></label>
+          </div>
+          <button class="primary" id="start-sequential">開始循序測驗</button>
+        </div>
+
+        <div class="mode-block">
+          <h3>隨機抽題</h3>
+          <p class="muted">從上方「循序測驗」設定的起訖題序範圍內隨機抽題（題數不足時取全部）。</p>
+          <div class="chip-row">
+            <button class="chip count-chip active" data-count="10">10 題</button>
+            <button class="chip count-chip" data-count="20">20 題</button>
+            <button class="chip count-chip" data-count="30">30 題</button>
+            <button class="chip count-chip" data-count="50">50 題</button>
+            <button class="chip count-chip" data-count="99999">全部</button>
+          </div>
+          <button class="primary" id="start-random">開始隨機測驗</button>
+        </div>
+
+        <div class="mode-block">
+          <h3>只練答錯過的題目</h3>
+          <p class="muted">從歷史紀錄抽出曾經答錯的題目，答對後即自動從錯題清單移除。<span id="wrong-count">目前累計 0 題</span></p>
+          <button class="primary" id="start-wrong">開始複習答錯題</button>
+        </div>
+
+        <div class="mode-block">
+          <h3>批改方式</h3>
+          <label class="radio"><input type="radio" name="feedback" value="immediate" checked /> 立即顯示答案（點選選項即刻批改）</label>
+          <label class="radio"><input type="radio" name="feedback" value="submit" /> 交卷後顯示（全部答完一次批改，模擬正式考試）</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== View: Quiz ===== -->
+    <section id="view-quiz" class="view">
+      <div class="quiz-toolbar">
+        <span id="quiz-progress-text"></span>
+        <div class="progress"><div id="quiz-progress-bar"></div></div>
+        <button class="ghost" id="quiz-pause">暫停</button>
+        <button class="ghost" id="quiz-quit">離開</button>
+      </div>
+
+      <article class="card" id="question-card">
+        <div class="qno">
+          <span id="q-no"></span>
+          <span class="badge" id="q-cat" hidden></span>
+        </div>
+
+        <!-- 題組引文 / 閱讀文章（可收合） -->
+        <details class="passage-box" id="q-passage-box" open hidden>
+          <summary>題組引文／閱讀文章（點擊可收合）</summary>
+          <div class="passage-body">
+            <div class="passage-text" id="q-passage"></div>
+            <div class="passage-img-wrap" id="q-passage-img-wrap" hidden>
+              <img id="q-passage-img" alt="題組原卷截圖" loading="lazy" />
+            </div>
+          </div>
+        </details>
+
+        <!-- 題幹（位於選項上方） -->
+        <div class="qstem" id="q-stem"></div>
+
+        <!-- 原卷題目截圖（可收合，保留公式、幾何圖形與統計表） -->
+        <details class="image-box" id="q-image-box" hidden>
+          <summary>觀看原卷題目截圖（含完整公式／圖表排版）</summary>
+          <div class="image-body">
+            <img id="q-image" alt="原卷題目截圖" loading="lazy" />
+          </div>
+        </details>
+
+        <!-- 單選選項區 -->
+        <ul class="options" id="q-options"></ul>
+
+        <div class="feedback" id="q-feedback" hidden></div>
+
+        <!-- 英文科題目翻譯（可收合） -->
+        <details class="translate-box" id="q-translate" hidden>
+          <summary>題目翻譯（繁體中文）</summary>
+          <div class="translate-body">
+            <div class="translate-stem" id="qt-stem"></div>
+            <ul class="translate-options" id="qt-options"></ul>
+          </div>
+        </details>
+
+        <div class="explain-box" id="q-explain" hidden></div>
+
+        <div class="note-area">
+          <label class="note-label" for="q-note">我的筆記</label>
+          <textarea class="note-input" id="q-note" rows="3" placeholder="作答時寫下這題的筆記…"></textarea>
+          <span class="note-status muted" id="q-note-status"></span>
+        </div>
+      </article>
+
+      <div class="quiz-buttons">
+        <button class="ghost" id="btn-explain">詳解</button>
+        <button class="ghost" id="btn-prev">上一題</button>
+        <button class="primary" id="btn-next">下一題</button>
+        <button class="primary submit" id="btn-submit" hidden>交卷</button>
+      </div>
+    </section>
+
+    <!-- ===== View: Result ===== -->
+    <section id="view-result" class="view">
+      <div class="card">
+        <h2>測驗結果</h2>
+        <div class="score-board">
+          <div class="score-main"><span id="res-score"></span> / <span id="res-total"></span> 題</div>
+          <div class="grade-pill" id="res-grade-box" hidden>
+            <span class="grade-badge" id="res-grade"></span>
+            <span class="grade-note" id="res-grade-note"></span>
+          </div>
+          <div class="score-meta">
+            正確率 <span id="res-pct"></span>%　·　用時 <span id="res-duration"></span>
+          </div>
+        </div>
+        <h3>答錯的題目 <span class="muted" id="res-wrong-count"></span></h3>
+        <ul class="wrong-list" id="res-wrong-list"></ul>
+        <div class="quiz-buttons">
+          <button class="primary" id="res-redo-wrong">重做這次答錯的題目</button>
+          <button class="ghost" id="res-back-home">回首頁</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== View: Search ===== -->
+    <section id="view-search" class="view">
+      <div class="card">
+        <h2>全文搜尋</h2>
+        <p class="muted">輸入關鍵字，搜尋 115–111 年全部題幹、題組引文、選項或我的筆記（不分大小寫）。</p>
+        <div class="search-row">
+          <input type="text" id="search-input" class="search-input" placeholder="例如：函數、季風、氧化還原、文言文、volunteer…" />
+          <button class="primary" id="search-btn">搜尋</button>
+        </div>
+        <div class="search-head">
+          <span class="search-summary muted" id="search-summary"></span>
+          <button class="primary" id="search-quiz" hidden>測驗這些題目</button>
+        </div>
+        <ul class="detail-list" id="search-results"></ul>
+      </div>
+    </section>
+
+    <!-- ===== View: History ===== -->
+    <section id="view-history" class="view">
+      <div class="card">
+        <h2>歷史紀錄</h2>
+        <div class="hist-toolbar">
+          <button class="ghost" id="hist-import">匯入 JSON</button>
+          <input type="file" id="hist-import-file" accept="application/json,.json" hidden />
+          <button class="ghost" id="hist-export">匯出 JSON</button>
+          <button class="ghost danger" id="hist-clear">清除所有紀錄</button>
+        </div>
+        <table class="hist-table">
+          <thead>
+            <tr><th>日期</th><th>模式／年度考科</th><th>答對題數</th><th>正確率</th><th>參考等級</th><th>用時</th><th></th></tr>
+          </thead>
+          <tbody id="hist-tbody"></tbody>
+        </table>
+        <p class="muted" id="hist-empty" hidden>尚無紀錄。</p>
+      </div>
+    </section>
+
+    <!-- ===== View: Detail ===== -->
+    <section id="view-detail" class="view">
+      <div class="card">
+        <div class="quiz-buttons" style="margin-top:0">
+          <button class="ghost" id="detail-back">← 回歷史紀錄</button>
+        </div>
+        <h2>測驗詳情</h2>
+        <div class="score-board">
+          <div class="score-main"><span id="detail-score"></span></div>
+          <div class="score-meta"><span id="detail-pct"></span> · <span id="detail-date"></span></div>
+        </div>
+
+        <div class="detail-tabs">
+          <button class="detail-tab active" data-tab="wrong">答錯</button>
+          <button class="detail-tab" data-tab="notes">筆記</button>
+        </div>
+
+        <div class="detail-pane" id="detail-pane-wrong">
+          <div class="quiz-buttons" style="margin-top:0">
+            <button class="primary" id="detail-redo-wrong" hidden>重做這次答錯的題目</button>
+          </div>
+          <ul class="detail-list" id="detail-list-wrong"></ul>
+        </div>
+
+        <div class="detail-pane" id="detail-pane-notes" hidden>
+          <p class="muted">筆記於作答時填寫，這裡僅顯示。</p>
+          <ul class="detail-list" id="detail-list-notes"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
